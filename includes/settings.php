@@ -1,19 +1,26 @@
 <?php
 $vms = $_SESSION["commandHandler"]->getVMs();
 if (isset($_GET["remove"])) {
-  unset($parsed_json[$_GET["remove"]]);
+  unset($vms[$_GET["remove"]]);
+  $_SESSION["commandHandler"]->setVMs(...$vms);
 }
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+  if (isset($_GET["add"])) {
+    $add = $_GET["add"];
+    for ($i=0; $i < $add; $i++) {
+      $vms[sizeof($vms)] = new VM();
+      $vms = $_SESSION["commandHandler"]->setVMs(...$vms);
+    }
+  }
   foreach ($_POST as $key => $value) {
     $keyar = explode("-",$key);
     $nr = $keyar[1];
     $jkey = $keyar[0];
-    $vms[$nr][$jkey] = $value;
+    $vms[$nr]->setFromPost($jkey,$value);
   }
   $_SESSION["commandHandler"]->setVMs(...$vms);
-  file_put_contents('settings.conf', serialize($_SESSION["commandHandler"]));
 }
-
+file_put_contents('settings.conf', serialize($_SESSION["commandHandler"]));
  ?>
  <script>
    function CheckClicked(t){
@@ -86,14 +93,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       </div>
         <br><hr><br>
           <h4>VMs</h4>
-          <form method="post" class="form" actions="/?view=settings">
+          <form method="post" class="form" action="/?view=settings">
 <?php
-  if (isset($_GET["add"])) {
-    $add = $_GET["add"];
-    for ($i=0; $i < $add; $i++) {
-      $parsed_json[sizeof($parsed_json)+1] = $parsed_json[1];
-    }
-  }
   foreach ($vms as $key => $value) {
     $c = $key;
     ?>
@@ -146,8 +147,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="row">
       <div class="col-md-3">
         <div class="form-group">
-          <label for="vmx-<?php echo $c;?>">*.vmx location</label>
-          <input name="vmx-<?php echo $c;?>" type="text" class="form-control" placeholder="/Path/To/*.vmx" value="<?php echo $value->getPath(); ?>">
+          <label for="path-<?php echo $c;?>">*.vmx location</label>
+          <input name="path-<?php echo $c;?>" type="text" class="form-control" placeholder="/Path/To/*.vmx" value="<?php echo $value->getPath(); ?>">
         </div>
       </div>
       <div class="col-md-3">
@@ -164,7 +165,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
   </div>
     <?php
-    $c++;
   }
 
 ?>

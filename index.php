@@ -3,9 +3,8 @@ require_once 'includes/classes/commands.php';
 require_once 'includes/classes/vm.php';
 session_start();
 
-$load = file_get_contents('test.json');
+$load = file_get_contents('settings.conf');
 $_SESSION["commandHandler"] = unserialize($load);
-// echo $_SESSION["commandHandler"]->getVMs()[0]->isLocal();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -16,7 +15,7 @@ $_SESSION["commandHandler"] = unserialize($load);
   <link rel="apple-touch-icon" sizes="76x76" href="assets/img/apple-icon.png">
   <link rel="icon" type="image/png" href="assets/img/favicon.png">
   <title>
-    Red Team Infrastructure Manager
+    Red Queen Command & Control
   </title>
   <link href="assets/css/poppins.css" rel="stylesheet" />
   <link href="assets/css/fontawesome.css" rel="stylesheet">

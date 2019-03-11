@@ -10,11 +10,46 @@ class VM {
   private $rootuser;
   private $rootpass;
 
-  function __construct($l, $p, $n, $d = "") {
+  function __construct($l="", $p="", $n="", $d = "") {
     $this->local = $l;
     $this->path = $p;
     $this->name = $n;
     $this->description = $d;
+  }
+
+  public function setFromPost($key, $value){
+    switch ($key) {
+      case 'local':
+        $this->local = $value;
+        break;
+      case 'path':
+        $this->path = $value;
+        break;
+      case 'name':
+        $this->name = $value;
+        break;
+      case 'description':
+        $this->description = $value;
+        break;
+      case 'ip':
+        $this->ip = $value;
+        break;
+      case 'sshuser':
+        $this->sshuser = $value;
+        break;
+      case 'sshpass':
+        $this->sshpass = $value;
+        break;
+      case 'rootuser':
+        $this->rootuser = $value;
+        break;
+      case 'rootpass':
+        $this->rootpass = $value;
+        break;
+      default:
+        return false;
+        break;
+    }
   }
 
   public function isLocal(){
@@ -31,6 +66,9 @@ class VM {
   }
   public function getIP(){
     return $this->ip;
+  }
+  public function setIP($ip){
+    return $this->ip = $ip;
   }
   public function getSshUser(){
     return $this->sshuser;
