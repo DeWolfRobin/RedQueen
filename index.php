@@ -6,6 +6,13 @@ $parsed_json = json_decode($json_file, true);
 $projects_file = file_get_contents("projects.json");
 $projects = json_decode($projects_file, true);
 
+require_once 'includes/classes/commands.php';
+require_once 'includes/classes/vm.php';
+$vm1 = new VM(true, "/root/vmware/Kali Full/Kali Full.vmx", "kali", "default kali vm");
+$c = CommandHandler::getInstance();
+$c->addVM($vm1);
+$c->setStealth(0);
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
