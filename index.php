@@ -1,18 +1,11 @@
 <?php
-session_start();
-$json_file = file_get_contents("settings.json");
-$parsed_json = json_decode($json_file, true);
-
-$projects_file = file_get_contents("projects.json");
-$projects = json_decode($projects_file, true);
-
 require_once 'includes/classes/commands.php';
 require_once 'includes/classes/vm.php';
-$vm1 = new VM(true, "/root/vmware/Kali Full/Kali Full.vmx", "kali", "default kali vm");
-$c = CommandHandler::getInstance();
-$c->addVM($vm1);
-$c->setStealth(0);
+session_start();
 
+$load = file_get_contents('test.json');
+$_SESSION["commandHandler"] = unserialize($load);
+// echo $_SESSION["commandHandler"]->getVMs()[0]->isLocal();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -60,7 +53,7 @@ $c->setStealth(0);
               require_once 'includes/cc.php';
               break;
             default:
-              require_once 'includes/404.php';
+              require_once 'includes/dashboard.php';
               break;
           }
         } else {

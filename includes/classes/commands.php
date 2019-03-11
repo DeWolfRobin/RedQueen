@@ -1,15 +1,14 @@
 <?php
 class CommandHandler {
   private static $instance = null;
-  public $whitelist;
   private $VMs;
-  private $stealth;
+  private $projects;
+  private $activeVM;
+  private $activeProject;
 
   function __construct() {
-    // $this->$VmwarePath = $path;
-    // $this->$VMs = array_filter(explode("\n",shell_exec("find ".$this->$VmwarePath." | grep .vmx$")));
-    $this->$VMs = [];
-    $this->$stealth = 0;
+    $this->VMs = [];
+    $this->projects = [];
   }
 
 //Singleton
@@ -23,15 +22,26 @@ class CommandHandler {
     return self::$instance;
   }
 
+  public function startVM(VM $vm){
+    $this->secureCommand("vmrun start ".$vm->getPath());
+  }
+
+  private function secureCommand($c){
+    shell_exec($c);
+  }
+
   public function getVMs(){
-    return $this->$VMs;
+    return $this->VMs;
   }
-  public function setStealth(int $i){
-    return $this->$stealth = $i;
+
+  public function setVMs(VM ...$vms){
+    $this->VMs = $vms;
+    return $this->VMs;
   }
+
   public function addVM(VM $VM){
-    array_push($this->$VMs,$VM);
-    return $this->$VMs;
+    array_push($this->VMs,$VM);
+    return $this->VMs;
   }
 }
 ?>

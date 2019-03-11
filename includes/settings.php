@@ -1,4 +1,5 @@
 <?php
+$vms = $_SESSION["commandHandler"]->getVMs();
 if (isset($_GET["remove"])) {
   unset($parsed_json[$_GET["remove"]]);
 }
@@ -7,11 +8,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $keyar = explode("-",$key);
     $nr = $keyar[1];
     $jkey = $keyar[0];
-    $parsed_json[$nr][$jkey] = $value;
+    $vms[$nr][$jkey] = $value;
   }
-  $fp = fopen('settings.json', 'w');
-  fwrite($fp, json_encode($parsed_json));
-  fclose($fp);
+  $_SESSION["commandHandler"]->setVMs(...$vms);
+  file_put_contents('settings.conf', serialize($_SESSION["commandHandler"]));
 }
 
  ?>
@@ -88,21 +88,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <h4>VMs</h4>
           <form method="post" class="form" actions="/?view=settings">
 <?php
-  $c = 1;
   if (isset($_GET["add"])) {
     $add = $_GET["add"];
     for ($i=0; $i < $add; $i++) {
       $parsed_json[sizeof($parsed_json)+1] = $parsed_json[1];
     }
   }
-  foreach ($parsed_json as $key => $value) {
+  foreach ($vms as $key => $value) {
+    $c = $key;
     ?>
     <div class="vm">
     <div class="row">
       <div class="col-md-3">
         <div class="form-group">
           <label for="name-<?php echo $c;?>">Name</label>
-          <input name="name-<?php echo $c;?>" type="text" class="form-control" placeholder="Name" value="<?php echo $value["name"]; ?>">
+          <input name="name-<?php echo $c;?>" type="text" class="form-control" placeholder="Name" value="<?php echo $value->getName(); ?>">
         </div>
       </div>
       <div class="col-md-9">
@@ -113,7 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <div class="col-md-6">
         <div class="form-group">
         <label for="description-<?php echo $c;?>">Description</label>
-        <textarea class="form-control" name="description-<?php echo $c;?>" rows="4" cols="80"><?php echo $value["description"]; ?></textarea>
+        <textarea class="form-control" name="description-<?php echo $c;?>" rows="4" cols="80"><?php echo $value->getDescription(); ?></textarea>
         </div>
       </div>
     </div>
@@ -121,25 +121,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <div class="col-md-3">
         <div class="form-group">
           <label for="sshuser-<?php echo $c;?>">Ssh username</label>
-          <input name="sshuser-<?php echo $c;?>" type="text" class="form-control" placeholder="User" value="<?php echo $value["sshuser"]; ?>">
+          <input name="sshuser-<?php echo $c;?>" type="text" class="form-control" placeholder="User" value="<?php echo  $value->getSshUser(); ?>">
         </div>
       </div>
       <div class="col-md-3">
         <div class="form-group">
           <label for="sshpass-<?php echo $c;?>">Ssh password</label>
-          <input name="sshpass-<?php echo $c;?>" type="text" class="form-control" placeholder="Password" value="<?php echo $value["sshpass"]; ?>">
+          <input name="sshpass-<?php echo $c;?>" type="text" class="form-control" placeholder="Password" value="<?php echo  $value->getSshPass(); ?>">
         </div>
       </div>
       <div class="col-md-3">
         <div class="form-group">
           <label for="rootuser-<?php echo $c;?>">Root username</label>
-          <input name="rootuser-<?php echo $c;?>" type="text" class="form-control" placeholder="Root" value="<?php echo $value["rootuser"]; ?>">
+          <input name="rootuser-<?php echo $c;?>" type="text" class="form-control" placeholder="Root" value="<?php echo  $value->getRootUser(); ?>">
         </div>
       </div>
       <div class="col-md-3">
         <div class="form-group">
           <label for="rootpass-<?php echo $c;?>">Root password</label>
-          <input name="rootpass-<?php echo $c;?>" type="text" class="form-control" placeholder="Password" value="<?php echo $value["rootpass"]; ?>">
+          <input name="rootpass-<?php echo $c;?>" type="text" class="form-control" placeholder="Password" value="<?php echo  $value->getRootPass(); ?>">
         </div>
       </div>
     </div>
@@ -147,13 +147,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <div class="col-md-3">
         <div class="form-group">
           <label for="vmx-<?php echo $c;?>">*.vmx location</label>
-          <input name="vmx-<?php echo $c;?>" type="text" class="form-control" placeholder="/Path/To/*.vmx" value="<?php echo $value["vmx"]; ?>">
+          <input name="vmx-<?php echo $c;?>" type="text" class="form-control" placeholder="/Path/To/*.vmx" value="<?php echo $value->getPath(); ?>">
         </div>
       </div>
       <div class="col-md-3">
         <div class="form-group">
           <label for="ip-<?php echo $c;?>">Ip address</label>
-          <input name="ip-<?php echo $c;?>" type="text" class="form-control" placeholder="0.0.0.0" value="<?php echo $value["ip"]; ?>">
+          <input name="ip-<?php echo $c;?>" type="text" class="form-control" placeholder="0.0.0.0" value="<?php echo $value->getIP(); ?>">
         </div>
       </div>
     </div>
