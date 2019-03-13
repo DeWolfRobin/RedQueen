@@ -1,7 +1,5 @@
 <!-- Navbar -->
 
-<?php
-$name = str_replace(" ","_",$projects[$_SESSION["currentproject"]]['name']); ?>
 <nav class="navbar navbar-expand-lg navbar-absolute navbar-transparent">
   <div class="container-fluid">
     <div class="navbar-wrapper">
@@ -12,7 +10,7 @@ $name = str_replace(" ","_",$projects[$_SESSION["currentproject"]]['name']); ?>
           <span class="navbar-toggler-bar bar3"></span>
         </button>
       </div>
-      <a class="navbar-brand" href="/?view=settings"><?php echo "Active project: $name"; ?></a>
+      <a class="navbar-brand" href="/?view=settings"><?php echo "Active project: ".$controller->getActiveProject()->getName(); ?></a>
     </div>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navigation" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-bar navbar-kebab"></span>

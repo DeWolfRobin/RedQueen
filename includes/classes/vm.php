@@ -9,6 +9,7 @@ class VM {
   private $sshpass;
   private $rootuser;
   private $rootpass;
+  private $snapshots;
 
   function __construct($l="", $p="", $n="", $d = "") {
     $this->local = $l;
@@ -18,6 +19,7 @@ class VM {
   }
 
   public function setFromPost($key, $value){
+    $value = htmlentities($value);
     switch ($key) {
       case 'local':
         $this->local = $value;
@@ -50,6 +52,31 @@ class VM {
         return false;
         break;
     }
+  }
+
+  public function startVM($controller){
+    return $controller->secureCommand("vmrun start \"".$this->getPath()."\"");
+  }
+
+  public function stopVM($controller){
+    return $controller->secureCommand("vmrun stop \"".$this->getPath()."\"");
+  }
+
+  public function getScreenshot($controller, $id){
+    if ($this->getRootPass() !== null) {
+      return $controller->secureCommand('vmrun -T ws -gu "'.$this->getRootUser().'" -gp "'.$this->getRootPass().'" captureScreen "'.$this->getPath().'" "assets/img/'.$id.'.png"');
+    } else {
+      return "Root password not set";
+    }
+  }
+
+  public function getSnapshots($controller){
+    $this->snapshots = preg_split('/$\R?^/m', $controller->secureCommand("vmrun listSnapshots  \"".$this->getPath()."\""));
+    return $this->snapshots;
+  }
+
+  public function revertToSnapshots($controller, $id){
+    return $controller->secureCommand("vmrun revertToSnapshot \"".$this->getPath()."\"");
   }
 
   public function isLocal(){

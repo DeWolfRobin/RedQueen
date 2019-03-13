@@ -1,26 +1,52 @@
 <?php
-$vms = $_SESSION["commandHandler"]->getVMs();
+$vms = $controller->getVMs();
+$projects = $controller->getProjects();
 if (isset($_GET["remove"])) {
   unset($vms[$_GET["remove"]]);
-  $_SESSION["commandHandler"]->setVMs(...$vms);
+}
+if (isset($_GET["remove-project"])) {
+  unset($projects[$_GET["remove-project"]]);
 }
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   if (isset($_GET["add"])) {
     $add = $_GET["add"];
     for ($i=0; $i < $add; $i++) {
       $vms[sizeof($vms)] = new VM();
-      $vms = $_SESSION["commandHandler"]->setVMs(...$vms);
     }
   }
-  foreach ($_POST as $key => $value) {
-    $keyar = explode("-",$key);
-    $nr = $keyar[1];
-    $jkey = $keyar[0];
-    $vms[$nr]->setFromPost($jkey,$value);
+  if (isset($_GET["add-project"])) {
+    $addp = $_GET["add-project"];
+    for ($i=0; $i < $addp; $i++) {
+      $projects[sizeof($projects)] = new Project();
+    }
   }
-  $_SESSION["commandHandler"]->setVMs(...$vms);
+  if (isset($_POST["projects"])) {
+      foreach ($_POST as $key => $value) {
+        $keyar = explode("-",$key);
+        $nr = $keyar[1];
+        $jkey = $keyar[0];
+        if ($nr !== null) {
+          if ($jkey == "active" && $value == "on") {
+            $controller->setActiveProject($projects[$nr]);
+          } else {
+            $projects[$nr]->setFromPost("active", false);
+          }
+          $projects[$nr]->setFromPost($jkey, $value);
+        }
+      }
+  } else {
+    foreach ($_POST as $key => $value) {
+      $keyar = explode("-",$key);
+      $nr = $keyar[1];
+      $jkey = $keyar[0];
+      $vms[$nr]->setFromPost($jkey,$value);
+    }
+  }
 }
-file_put_contents('settings.conf', serialize($_SESSION["commandHandler"]));
+$controller->setProjects(...$projects);
+$controller->setVMs(...$vms);
+//save
+file_put_contents('settings.conf', serialize($controller));
  ?>
  <script>
    function CheckClicked(t){
@@ -41,35 +67,30 @@ file_put_contents('settings.conf', serialize($_SESSION["commandHandler"]));
         </div>
         <div class="card-body">
           <h4>Projects</h4>
-          <form action="includes/save-projects.php" method="post">
+          <form action="/?view=settings" method="post">
           <?php
-          if (isset($_GET["add-project"])) {
-            $addp = $_GET["add-project"];
-            for ($i=0; $i < $addp; $i++) {
-              $projects[sizeof($projects)+1] = $projects[1];
-            }
-          }
-            foreach ($projects as $p => $value) {
+            foreach ($projects as $key => $project) {
               ?>
               <div class="project">
                 <div class="row">
                   <div class="col-md-6">
                     <div class="form-group">
                       <label>Name</label>
-                    <input class="form-control" type="text" name="name-<?php echo $p; ?>" value="<?php echo $projects[$p]["name"]; ?>">
+                    <input class="form-control" type="text" name="name-<?php echo $key; ?>" value="<?php echo $project->getName(); ?>">
                     </div>
                   </div>
                   <div class="col-md-6">
                     <div class="form-group">
+                      <a href="/?view=settings&remove-project=<?php echo $key; ?>" class="tim-icons icon-trash-simple" style="float:right;"></a>
                       <label>Stealth</label>
-                    <input class="form-control" type="number" name="stealth-<?php echo $p; ?>" value="<?php echo $projects[$p]["stealth"]; ?>">
+                    <input class="form-control" type="number" name="stealth-<?php echo $key; ?>" value="<?php echo $project->getStealth(); ?>">
                     </div>
                   </div>
                 </div>
                 <div class="row">
                   <div class="col-md-3">
-                    <label for="active-<?php echo $p; ?>">Active?</label>
-                    <input class="form-controll check" type="checkbox" onclick="CheckClicked(this)" name="active-<?php echo $p; ?>" <?php if ($projects[$p]["active"] == "on") {
+                    <label for="active-<?php echo $key; ?>">Active?</label>
+                    <input class="form-controll check" type="checkbox" onclick="CheckClicked(this)" name="active-<?php echo $key; ?>" <?php if ($project->isActive()) {
                       echo "checked";
                     } ?>/>
                   </div>
@@ -80,7 +101,7 @@ file_put_contents('settings.conf', serialize($_SESSION["commandHandler"]));
           ?>
           <div class="row">
             <div class="col-md-6">
-          <input type="submit" class="btn btn-fill btn-primary" value="Save"/>
+          <input name="projects" type="submit" class="btn btn-fill btn-primary" value="Save"/>
         </div>
         <div class="col-md-6">
           </form>

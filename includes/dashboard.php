@@ -1,17 +1,18 @@
 <?php
-$vmsstored = $_SESSION["commandHandler"]->getVMs();
+$vmsstored = $controller->getVMs();
   if (isset($_GET["action"])&&isset($_GET["vm"])) {
+    $activeVM = $vmsstored[$_GET["vm"]];
     $action = $_GET['action'];
-    $vm = str_replace(" ", "\ ", $vmsstored[$_GET["vm"]]->getPath());
-    if (isset($_GET["option"])) {
-      $option = $_GET["option"];
-    }else {
-      $option = "";
-    }
-    if (isset($_GET["option"])) {
-      echo shell_exec("vmrun $action $vm \"$option\"");
-    } else {
-      echo shell_exec("vmrun $action $vm");
+    $vm = str_replace(" ", "\ ", $activeVM->getPath());
+    // if (isset($_GET["option"])) {
+    //   echo shell_exec("vmrun $action $vm \"$option\"");
+    // } else {
+    //
+    // }
+    if ($action == "start") {
+      $activeVM->startVM($controller);
+    } elseif ($action == "stop") {
+      $activeVM->stopVM($controller);
     }
   }
 ?>
@@ -22,9 +23,7 @@ $vmsstored = $_SESSION["commandHandler"]->getVMs();
         <div class="row">
           <div class="col-sm-6 text-left">
             <h2 class="card-title"><?php
-            $vms = shell_exec("vmrun list");
-            $vmaray = preg_split('/$\R?^/m', $vms);
-            echo $vmaray[0];
+            echo $controller->getActiveTitle();
             ?></h2>
           </div>
         </div>
@@ -32,37 +31,29 @@ $vmsstored = $_SESSION["commandHandler"]->getVMs();
       <div class="card-body">
         <div class="chart-area">
           <?php
-            for ($i=1; $i <= sizeof($vmaray)-1; $i++) {
-                  foreach ($vmsstored as $key => $value) {
-                    if (($vmsstored[$key]->getPath()."\n" == $vmaray[$i]) OR ($vmsstored[$key]->getPath()  == $vmaray[$i])) {
-                      if ($vmsstored[$key]->getRootPass() !== null) {
-                        shell_exec('vmrun -T ws -gu "'.$vmsstored[$key]->getRootUser().'" -gp "'.$vmsstored[$key]->getRootPass().'" captureScreen "'.$vmsstored[$key]->getPath().'" "assets/img/'.$key.'.png"');
-                      }
-                      ?>
-                      <div class="card" style="width: 18rem;float:left; margin-left:15px;">
-                        <img src="../assets/img/<?php echo $key; ?>.png" class="card-img-top" alt="Image of the vm">
-                        <div class="card-body">
-                      <?php
-                      echo '<h5 class="card-title">'.$vmsstored[$key]->getName().'</h5><p class="card-text">'.$vmsstored[$key]->getDescription().'</p>';
-                      $vmsstored[$key]->setIP(shell_exec("vmrun getGuestIPAddress '".$vmsstored[$key]->getPath()."'"));
-                      echo $vmsstored[$key]->getIP();
-                      $location = $$vmsstored[$key]->getPath();
-                      $snapshots = shell_exec("vmrun listSnapshots \"$location\"");
-                      $snapshots = preg_split('/$\R?^/m', $snapshots);
-                      echo '<p class="card-text"><a href="/?action=revertToSnapshot&vm='.$key.'&option='.$snapshots[1].'">Reset to '.$snapshots[1].'</a></p>';
-                      echo '<p class="card-text"><a href="/?action=revertToSnapshot&vm='.$key.'&option='.$snapshots[sizeof($snapshots)-1].'">Reset to '.$snapshots[sizeof($snapshots)-1].'</a></p>';
-                      ?>
-                      <p class="card-text"><a href="/?view=ssh&id=<?php echo $key; ?>&ip=<?php echo $vmsstored[$key]->getIP(); ?>">Open ssh</a></p>
-                      <a href="/?view=details&id=<?php echo $key; ?>" class="btn btn-primary">Details</a>
-                      <a href="/?action=stop&vm=<?php echo $key;?>" class="btn btn-secondary">Turn off</a>
-                      <?php
-                    }
-                  }
-                  ?>
-                  </div>
-              </div>
-              <?php
-            }
+            foreach ($controller->getActiveVMs() as $key => $vm) {
+                echo $vm->getScreenshot($controller, $key);
+                ?>
+                <div class="card" style="width: 18rem;float:left; margin-left:15px;">
+                  <img src="../assets/img/<?php echo $key; ?>.png" class="card-img-top" alt="Image of the vm">
+                  <div class="card-body">
+                <?php
+                echo '<h5 class="card-title">'.$vm->getName().'</h5><p class="card-text">'.$vm->getDescription().'</p>';
+                $vm->setIP(shell_exec("vmrun getGuestIPAddress '".$vm->getPath()."'"));
+                echo $vm->getIP();
+                $firstsnapshot = $vm->getSnapshots($controller)[1];
+                $lastsnapshot = $vm->getSnapshots($controller)[sizeof($vm->getSnapshots($controller))-1];
+                echo '<p class="card-text"><a href="/?action=revertToSnapshot&vm='.$key.'&option='.$firstsnapshot.'">Reset to '.$firstsnapshot.'</a></p>';
+                echo '<p class="card-text"><a href="/?action=revertToSnapshot&vm='.$key.'&option='.$lastsnapshot.'">Reset to '.$lastsnapshot.'</a></p>';
+                ?>
+                <p class="card-text"><a href="/?view=ssh&id=<?php echo $key; ?>&ip=<?php echo $vm->getIP(); ?>">Open ssh</a></p>
+                <a href="/?view=details&id=<?php echo $key; ?>" class="btn btn-primary">Details</a>
+                <a href="/?action=stop&vm=<?php echo $key;?>" class="btn btn-secondary">Turn off</a>
+
+                </div>
+            </div>
+                <?php
+              }
           ?>
       </div>
     </div>
@@ -81,19 +72,20 @@ $vmsstored = $_SESSION["commandHandler"]->getVMs();
       <div class="chart-area">
         <?php
           foreach ($vmsstored as $key => $value) {
+            $vm = $vmsstored[$key];
             ?>
             <div class="card" style="width: 18rem;float:left; margin-left:15px;">
               <img src="../assets/img/<?php echo $key; ?>.png" class="card-img-top" alt="Image of the vm">
               <div class="card-body">
                 <h5 class="card-title"><?php
-                  echo $vmsstored[$key]->getName();
+                  echo $vm->getName();
                 ?></h5>
-                <p class="card-text"><?php echo $vmsstored[$key]->getDescription(); ?></p>
+                <p class="card-text"><?php echo $vm->getDescription(); ?></p>
                 <small><?php
-                  echo "(".$vmsstored[$key]->getPath().")";
+                  echo "(".$vm->getPath().")";
                 ?></small><p>
                 <?php
-                  if ((!in_array($vmsstored[$key]->getPath()."\n",$vmaray)) AND (!in_array($vmsstored[$key]->getPath(),$vmaray))) {
+                  if ((!in_array($vm->getPath()."\n",$controller->getActiveVMs())) AND (!in_array($vm->getPath(),$controller->getActiveVMs()))) {
                     ?><a href="/?action=start&vm=<?php echo $key;?>" class="btn btn-primary">Turn on</a><?php
                   } else {
                     ?><a href="/?action=stop&vm=<?php echo $key;?>" class="btn btn-primary">Turn off</a><?php

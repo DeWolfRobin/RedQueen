@@ -22,16 +22,34 @@ class CommandHandler {
     return self::$instance;
   }
 
-  public function startVM(VM $vm){
-    $this->secureCommand("vmrun start ".$vm->getPath());
-  }
-
-  private function secureCommand($c){
-    shell_exec($c);
+  public function secureCommand($c){
+    return shell_exec($c);
   }
 
   public function getVMs(){
     return $this->VMs;
+  }
+
+  public function getProjects(){
+    return $this->projects;
+  }
+
+  public function getActiveVMs(){
+    $list = preg_split('/$\R?^/m', shell_exec("vmrun list"));
+    unset($list[0]);
+    $xlist = [];
+    foreach ($list as $listkey => $pathname) {
+      foreach ($this->VMs as $VMkey => $VM) {
+        if (trim($pathname) == trim($VM->getPath())) {
+          $xlist[sizeof($xlist)] = $VM;
+        }
+      }
+    }
+    return $xlist;
+  }
+
+  public function getActiveTitle(){
+    return preg_split('/$\R?^/m', shell_exec("vmrun list"))[0];
   }
 
   public function setVMs(VM ...$vms){
@@ -42,6 +60,23 @@ class CommandHandler {
   public function addVM(VM $VM){
     array_push($this->VMs,$VM);
     return $this->VMs;
+  }
+
+  public function setProjects(Project ...$ps){
+    $this->projects = $ps;
+    return $this->projects;
+  }
+
+  public function setActiveProject(Project $p){
+    return $this->activeProject = $p;
+  }
+  public function getActiveProject(){
+    return $this->activeProject;
+  }
+
+  public function addProject(Project $ps){
+    array_push($this->projects,$ps);
+    return $this->projects;
   }
 }
 ?>
