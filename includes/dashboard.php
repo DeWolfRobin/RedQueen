@@ -4,11 +4,9 @@ $vmsstored = $controller->getVMs();
     $activeVM = $vmsstored[$_GET["vm"]];
     $action = $_GET['action'];
     $vm = str_replace(" ", "\ ", $activeVM->getPath());
-    // if (isset($_GET["option"])) {
-    //   echo shell_exec("vmrun $action $vm \"$option\"");
-    // } else {
-    //
-    // }
+    if (isset($_GET["snapshot"])) {
+      echo $activeVM->revertToSnapshot($controller, htmlentities($_GET["snapshot"]));
+    }
     if ($action == "start") {
       $activeVM->startVM($controller);
     } elseif ($action == "stop") {
@@ -43,10 +41,10 @@ $vmsstored = $controller->getVMs();
                 echo $vm->getIP();
                 $firstsnapshot = $vm->getSnapshots($controller)[1];
                 $lastsnapshot = $vm->getSnapshots($controller)[sizeof($vm->getSnapshots($controller))-1];
-                echo '<p class="card-text"><a href="/?action=revertToSnapshot&vm='.$key.'&option='.$firstsnapshot.'">Reset to '.$firstsnapshot.'</a></p>';
-                echo '<p class="card-text"><a href="/?action=revertToSnapshot&vm='.$key.'&option='.$lastsnapshot.'">Reset to '.$lastsnapshot.'</a></p>';
+                echo '<p class="card-text"><a href="/?vm='.$key.'&action=snapshot&snapshot=1">Reset to '.$firstsnapshot.'</a></p>';
+                echo '<p class="card-text"><a href="/?vm='.$key.'&action=snapshot&snapshot='.(sizeof($vm->getSnapshots($controller))-1).'">Reset to '.$lastsnapshot.'</a></p>';
                 ?>
-                <p class="card-text"><a href="/?view=ssh&id=<?php echo $key; ?>&ip=<?php echo $vm->getIP(); ?>">Open ssh</a></p>
+                <p class="card-text"><a href="#">Open ssh</a></p>
                 <a href="/?view=details&id=<?php echo $key; ?>" class="btn btn-primary">Details</a>
                 <a href="/?action=stop&vm=<?php echo $key;?>" class="btn btn-secondary">Turn off</a>
 

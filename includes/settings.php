@@ -39,6 +39,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       $keyar = explode("-",$key);
       $nr = $keyar[1];
       $jkey = $keyar[0];
+        if ($jkey == "local" && $value == "on") {
+          $vms[$nr]->setFromPost("local", true);
+        } else {
+          $vms[$nr]->setFromPost("local", false);
+        }
       $vms[$nr]->setFromPost($jkey,$value);
     }
   }
@@ -90,7 +95,7 @@ file_put_contents('settings.conf', serialize($controller));
                 <div class="row">
                   <div class="col-md-3">
                     <label for="active-<?php echo $key; ?>">Active?</label>
-                    <input class="form-controll check" type="checkbox" onclick="CheckClicked(this)" name="active-<?php echo $key; ?>" <?php if ($project->isActive()) {
+                    <input class="check" type="checkbox" onclick="CheckClicked(this)" name="active-<?php echo $key; ?>" <?php if ($project->isActive()) {
                       echo "checked";
                     } ?>/>
                   </div>
@@ -177,6 +182,12 @@ file_put_contents('settings.conf', serialize($controller));
           <label for="ip-<?php echo $c;?>">Ip address</label>
           <input name="ip-<?php echo $c;?>" type="text" class="form-control" placeholder="0.0.0.0" value="<?php echo $value->getIP(); ?>">
         </div>
+      </div>
+      <div class="col-md-3">
+        <label for="local-<?php echo $c; ?>">Local?</label>
+        <input class="check" type="checkbox" name="local-<?php echo $c; ?>" <?php if ($value->isLocal()) {
+          echo "checked";
+        } ?>/>
       </div>
     </div>
     <div class="row">

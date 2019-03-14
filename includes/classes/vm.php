@@ -75,8 +75,10 @@ class VM {
     return $this->snapshots;
   }
 
-  public function revertToSnapshots($controller, $id){
-    return $controller->secureCommand("vmrun revertToSnapshot \"".$this->getPath()."\"");
+  public function revertToSnapshot($controller, $id){
+    $snap = $controller->secureCommand("vmrun revertToSnapshot \"".$this->getPath()."\" \"".trim($this->getSnapshots($controller)[$id])."\"");
+    $this->startVM($controller);
+    return $snap;
   }
 
   public function isLocal(){

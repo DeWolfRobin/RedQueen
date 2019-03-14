@@ -1,23 +1,26 @@
 <?php
-if ((isset($_GET["id"])) AND ($parsed_json[$_GET["id"]] != "")) {
+if ((isset($_GET["id"])) AND ($controller->getVMs()[$_GET["id"]] !== null)) {
   $id = $_GET["id"];
 } else {
   require_once '404.php';
   die();
 }
 
-  $location = $parsed_json[$id]['vmx'];
+$status = "offline";
+$vm = $controller->getVMs()[$id];
   if (isset($_POST["snapshot"])) {
-    echo shell_exec("vmrun revertToSnapshot '".$location."' '".$_POST["snapshot"]."'");
+    echo $vm->revertToSnapshot($controller, $_POST["snapshot"]);
   }
-  if (isset($_POST["status"])) {
-    echo shell_exec("vmrun ".$_POST["status"]." '".$location."'");
+  if (isset($_POST["start"])) {
+    echo $vm->startVM($controller);
   }
-  $vms = shell_exec("vmrun list");
-  $vmaray = preg_split('/$\R?^/m', $vms);
-  $status = "offline";
-  foreach ($vmaray as $key => $value) {
-    if (($value == $parsed_json[$id]["vmx"]) OR ($value == $parsed_json[$id]["vmx"]."\n")) {
+  if (isset($_POST["stop"])) {
+    echo $vm->stopVM($controller);
+  }
+  // $vms = shell_exec("vmrun list");
+  // $vmaray = preg_split('/$\R?^/m', $vms);
+  foreach ($controller->getActiveVMs() as $key => $VM) {
+    if ($VM == $vm) {
       $status = "running";
     }
   }
@@ -26,27 +29,23 @@ if ((isset($_GET["id"])) AND ($parsed_json[$_GET["id"]] != "")) {
   <div class="col-md-12">
     <div class="card">
       <div class="card-header">
-        <h5 class="title">Details of <?php echo $parsed_json[$id]["name"] ?></h5>
+        <h5 class="title">Details of <?php echo $vm->getName() ?></h5>
       </div>
       <div class="card-body">
           <div class="row">
             <div class="col-md-6">
-                <h6><?php echo $parsed_json[$id]["name"] ?> - <?php echo $status; ?></h6>
-                <p><?php echo $parsed_json[$id]["description"] ?></p>
+                <h6><?php echo $vm->getName() ?> - <?php echo $status; ?></h6>
+                <p><?php echo $vm->getDescription() ?></p>
                 <?php if ($status == "running"): ?>
-                  <?php if (isset($parsed_json[$id]["rootpass"])) {
-                    shell_exec('vmrun -T ws -gu "'.$parsed_json[$id]["rootuser"].'" -gp "'.$parsed_json[$id]["rootpass"].'" captureScreen "'.$parsed_json[$id]["vmx"].'" "assets/img/'.$id.'.png"');
-                  } ?>
+                  <?php echo $vm->getScreenshot($controller, $id);?>
                     <h6>Restore a snapshot</h6>
                     <form class="" method="post">
                       <div class="form-group">
                       <select class="" name="snapshot" class="form-control">
                         <?php
-                          $snapshots = shell_exec("vmrun listSnapshots \"$location\"");
-                          $snapshots = preg_split('/$\R?^/m', $snapshots);
-                          foreach ($snapshots as $key => $value) {
+                          foreach ($vm->getSnapshots($controller) as $key => $value) {
                             ?>
-                              <option value="<?php echo trim($value,"\n"); ?>"><?php echo $value; ?></option>
+                              <option value="<?php echo $key; ?>"><?php echo $value; ?></option>
                             <?php
                           }
                         ?>
@@ -58,15 +57,15 @@ if ((isset($_GET["id"])) AND ($parsed_json[$_GET["id"]] != "")) {
                 <form class="" action="" method="post">
                   <?php
                   if ($status == "running") {
-                    ?><input type="submit" name="status" value="stop" class="btn btn-primary"><?php
+                    ?><input type="submit" name="stop" value="stop" class="btn btn-primary"><?php
                   } else {
-                    ?><input type="submit" name="status" value="start" class="btn btn-primary"><?php
+                    ?><input type="submit" name="start" value="start" class="btn btn-primary"><?php
                   }
                   ?>
                 </form>
             </div>
             <div class="col-md-6">
-              <img src="../assets/img/<?php echo $id; ?>.png" class="card-img-top" alt="Image of the vm">
+              <img src="../assets/img/<?php echo htmlentities($id); ?>.png" class="card-img-top" alt="Image of the vm">
             </div>
           </div>
           <div class="row">

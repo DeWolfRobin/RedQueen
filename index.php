@@ -43,11 +43,6 @@ if ($load !== null) {
         if (isset($_GET["view"])) {
           $v = $_GET["view"];
           switch ($v) {
-            case "ssh":
-              ?><iframe src="includes/ssh.php?id=<?php echo $_GET["id"]; ?><?php if (isset($_GET["ip"])) {
-                echo "&ip=".$_GET["ip"];
-              } ?>" frameborder=0 scrolling="no" width="100%" height="100%" style="height:85vh;"></iframe><?php
-              break;
             case "settings":
               require_once 'includes/settings.php';
               break;
