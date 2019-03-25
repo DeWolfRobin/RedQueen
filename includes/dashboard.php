@@ -44,7 +44,7 @@ $vmsstored = $controller->getVMs();
                 echo '<p class="card-text"><a href="/?vm='.$key.'&action=snapshot&snapshot=1">Reset to '.$firstsnapshot.'</a></p>';
                 echo '<p class="card-text"><a href="/?vm='.$key.'&action=snapshot&snapshot='.(sizeof($vm->getSnapshots($controller))-1).'">Reset to '.$lastsnapshot.'</a></p>';
                 ?>
-                <p class="card-text"><a href="#">Open ssh</a></p>
+                <p class="card-text"><a href="//<?php echo $vm->getIP()."/?user=".urlencode($vm->getRootUser())."&password=".urlencode(hash("sha256",$vm->getRootPass())); ?>">Open webconsole</a></p>
                 <a href="/?view=details&id=<?php echo $key; ?>" class="btn btn-primary">Details</a>
                 <a href="/?action=stop&vm=<?php echo $key;?>" class="btn btn-secondary">Turn off</a>
 

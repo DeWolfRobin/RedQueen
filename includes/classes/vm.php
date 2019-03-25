@@ -10,6 +10,7 @@ class VM {
   private $rootuser;
   private $rootpass;
   private $snapshots;
+  private $kali = false;
 
   function __construct($l="", $p="", $n="", $d = "") {
     $this->local = $l;
@@ -23,6 +24,9 @@ class VM {
     switch ($key) {
       case 'local':
         $this->local = $value;
+        break;
+      case 'kali':
+        $this->kali = $value;
         break;
       case 'path':
         $this->path = $value;
@@ -54,15 +58,29 @@ class VM {
     }
   }
 
-  public function startVM($controller){
+  public function startVM(CommandHandler $controller){
     return $controller->secureCommand("vmrun start \"".$this->getPath()."\"");
   }
 
-  public function stopVM($controller){
+  // public function startSSH($controller){
+  //   return $controller->secureCommand("putty ".$this->getIP());
+  // }
+
+  public function exec(CommandHandler $controller, $command){
+    $controller->secureCommand("vmrun -T ws -gu ".$this->getRootUser()." -gp ".$this->getRootPass()." runScriptInGuest '".$this->getPath()."' '/bin/bash' \"".htmlentities($command)." 2>error 1>/tmp.cmd\"");
+    $controller->secureCommand("vmrun  -T ws -gu ".$this->getRootUser()." -gp ".$this->getRootPass()." CopyFileFromGuestToHost \"".$this->getPath()."\" /tmp.cmd ./tmp");
+    $controller->secureCommand("vmrun  -T ws -gu ".$this->getRootUser()." -gp ".$this->getRootPass()." CopyFileFromGuestToHost \"".$this->getPath()."\" /error ./error");
+    return file_get_contents("tmp");
+  }
+  public function debug_exec(){
+    return "CopyFileFromGuestToHost \"".$this->getPath()."\" /tmp/commandoutput ./tmp";
+  }
+
+  public function stopVM(CommandHandler $controller){
     return $controller->secureCommand("vmrun stop \"".$this->getPath()."\"");
   }
 
-  public function getScreenshot($controller, $id){
+  public function getScreenshot(CommandHandler $controller, $id){
     if ($this->getRootPass() !== null) {
       return $controller->secureCommand('vmrun -T ws -gu "'.$this->getRootUser().'" -gp "'.$this->getRootPass().'" captureScreen "'.$this->getPath().'" "assets/img/'.$id.'.png"');
     } else {
@@ -70,12 +88,12 @@ class VM {
     }
   }
 
-  public function getSnapshots($controller){
+  public function getSnapshots(CommandHandler $controller){
     $this->snapshots = preg_split('/$\R?^/m', $controller->secureCommand("vmrun listSnapshots  \"".$this->getPath()."\""));
     return $this->snapshots;
   }
 
-  public function revertToSnapshot($controller, $id){
+  public function revertToSnapshot(CommandHandler $controller, $id){
     $snap = $controller->secureCommand("vmrun revertToSnapshot \"".$this->getPath()."\" \"".trim($this->getSnapshots($controller)[$id])."\"");
     $this->startVM($controller);
     return $snap;
@@ -83,6 +101,9 @@ class VM {
 
   public function isLocal(){
     return $this->local;
+  }
+  public function iskali(){
+    return $this->kali;
   }
   public function getPath(){
     return $this->path;

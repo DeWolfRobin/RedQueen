@@ -41,8 +41,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       $jkey = $keyar[0];
         if ($jkey == "local" && $value == "on") {
           $vms[$nr]->setFromPost("local", true);
-        } else {
+        } else if ($jkey == "local") {
           $vms[$nr]->setFromPost("local", false);
+        }
+        if ($jkey == "kali" && $value == "on") {
+          $vms[$nr]->setFromPost("kali", true);
+        } else if ($jkey == "kali") {
+          $vms[$nr]->setFromPost("kali", false);
         }
       $vms[$nr]->setFromPost($jkey,$value);
     }
@@ -186,6 +191,12 @@ file_put_contents('settings.conf', serialize($controller));
       <div class="col-md-3">
         <label for="local-<?php echo $c; ?>">Local?</label>
         <input class="check" type="checkbox" name="local-<?php echo $c; ?>" <?php if ($value->isLocal()) {
+          echo "checked";
+        } ?>/>
+      </div>
+      <div class="col-md-3">
+        <label for="kali-<?php echo $c; ?>">Main Kali?</label>
+        <input class="check" type="checkbox" name="kali-<?php echo $c; ?>" <?php if ($value->isKali()) {
           echo "checked";
         } ?>/>
       </div>

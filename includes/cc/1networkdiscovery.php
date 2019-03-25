@@ -1,16 +1,16 @@
 <pre><?php
-$ip = trim(shell_exec("vmrun getGuestIPAddress '".$parsed_json[1]["vmx"]."'"),"\n");
 if (isset($_POST["network-discovery"])) {
-  //check which one is the kali first!!!
-  shell_exec("$basecommand \"echo '".$_POST["range"]."'>temp.conf\"");
-  shell_exec("$basecommand \"mkdir /home/user/$name\"");
+  $name = $controller->getActiveProject()->getName();
+  $kali->exec($controller,"mkdir '/home/user/$name'");
   $logname = str_replace(" ","_",$_POST["log"]);
-  echo shell_exec("$basecommand \"nmap -n -sS -iL temp.conf -oG - | awk '/Up$/{print $2}' | uniq | sort -n -t . -k 1,1 -k 2,2 -k 3,3 -k 4,4 > /home/user/$name/$logname.log\"");
-  $ips = file_get_contents("http://".$ip."/?cmd=cat%20/home/user/$name/$logname.log".urlencode("| awk '/Up$/{print $2}' | uniq | sort -n -t . -k 1,1 -k 2,2 -k 3,3 -k 4,4"));
-  $ips = preg_split('/$\R?^/m', $ips);
-  foreach ($ips as $i) {
-    shell_exec("$basecommand \"nmap -O -sV $i > /home/user/$name/$i\"");
-  }
+  $range = str_replace("\r\n"," ",$_POST["range"]);
+  // echo $kali->exec($controller,"nmap -n -sS -oG - '".$_POST["range"]."' | awk '/Up$/{print $2}' | uniq | sort -n -t . -k 1,1 -k 2,2 -k 3,3 -k 4,4 > '/home/user/$name/$logname.log'");
+  echo $kali->exec($controller,"nmap -n -sS -oG '/home/user/$name/$logname.log' ".$range." ");
+  // $ips = $kali->exec($controller,"cat '/home/user/$name/$logname.log' | awk '/Up$/{print $2}' | uniq | sort -n -t . -k 1,1 -k 2,2 -k 3,3 -k 4,4");
+  // $ips = preg_split('/$\R?^/m', $ips);
+  // foreach ($ips as $i) {
+  //   $kali->exec($controller,"nmap -O -sV $i > '/home/user/$name/$i'");
+  // }
 }
 ?>
 </pre>

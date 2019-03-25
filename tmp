@@ -1,0 +1,18 @@
+Starting Nmap 7.70 ( https://nmap.org ) at 2019-03-19 04:00 EDT
+Nmap scan report for 127.0.0.1
+Host is up (0.0000060s latency).
+Not shown: 998 closed ports
+PORT   STATE SERVICE
+22/tcp open  ssh
+80/tcp open  http
+
+Nmap scan report for 8.8.8.8
+Host is up (0.0076s latency).
+Not shown: 996 filtered ports
+PORT     STATE  SERVICE
+53/tcp   open   domain
+113/tcp  closed ident
+443/tcp  open   https
+8008/tcp open   http
+
+Nmap done: 2 IP addresses (2 hosts up) scanned in 4.54 seconds

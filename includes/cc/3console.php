@@ -1,9 +1,8 @@
 <div class="row">
   <div class="col-md-12">
 <pre><?php
-$ip = trim(shell_exec("vmrun getGuestIPAddress '".$parsed_json[1]["vmx"]."'"),"\n");
 if (isset($_GET["cmd"])) {
-  echo file_get_contents("http://".$ip."/?cmd=".urlencode($_GET["cmd"]));
+  echo $kali->exec($controller,$_GET["cmd"]);
 }
 ?>
 <pre>

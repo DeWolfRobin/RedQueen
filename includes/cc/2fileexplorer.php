@@ -1,8 +1,5 @@
 <?php
-
-$ip = trim(shell_exec("vmrun getGuestIPAddress '".$parsed_json[1]["vmx"]."'"),"\n");
-$vmrun = "vmrun -T ws -gu ".$parsed_json[1]["rootuser"]." -gp ".$parsed_json[1]["rootpass"];
-$path = "/home/user/";
+$path = "/root/";
 if (isset($_GET["path"])) {
   $path = $_GET["path"];
 }
@@ -24,9 +21,9 @@ if (isset($_GET["path"])) {
         if (substr(rtrim($path), -1) != "/") {
           $path.="/";
         }
-          $files = file_get_contents("http://".$ip."/?cmd=ls%20-la%20".urlencode($path)."%20|%20awk%20'/^-/%20{print%20$9}'");
+          $files = $kali->exec($controller,"ls -la $path | awk '/^-/ {print $9}'");
           $files = preg_split('/$\R?^/m', $files);
-          $dirs = file_get_contents("http://".$ip."/?cmd=ls%20-la%20".urlencode($path)."%20|%20awk%20'/^d/%20{print%20$9}'");
+          $dirs = $kali->exec($controller,"ls -la $path | awk '/^d/ {print $9}'");
           $dirs = preg_split('/$\R?^/m', $dirs);
           foreach ($dirs as $dir) {
             echo "<li><a href='/?view=cc&sub=files&path=".$path.$dir."'><i class='tim-icons icon-single-copy-04'></i> ".$dir."</a></li>";
@@ -42,7 +39,7 @@ if (isset($_GET["path"])) {
         <pre>
 <?php
 if (isset($_GET["file"])) {
-  echo file_get_contents("http://".$ip."/?cmd=cat%20".urlencode($path).urlencode($_GET["file"]));
+  echo $kali->exec($controller,"cat $path".$_GET["file"]);
 }
 ?>
 </pre>

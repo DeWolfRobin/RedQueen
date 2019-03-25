@@ -29,6 +29,20 @@ class CommandHandler {
   public function getVMs(){
     return $this->VMs;
   }
+  public function getKali(){
+    foreach ($this->VMs as $key => $vm) {
+      if ($vm->isKali()) {
+        return $vm;
+      }
+    }
+    return $this->VMs;
+  }
+  public function getActiveVM(){
+    return $this->activeVM;
+  }
+  public function setActiveVM(VM $v){
+    return $this->activeVM = $v;
+  }
 
   public function getProjects(){
     return $this->projects;

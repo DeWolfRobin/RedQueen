@@ -1,10 +1,13 @@
+<?php
+$kali = $controller->getKali();
+$ip = $kali->getIP();
+?>
 <div class="card">
   <div class="card-header">
     <h5 class="title">Command & Control</h5>
   </div>
   <div class="card-body">
 <?php
-$basecommand = "vmrun -T ws -gu ".$parsed_json[1]["rootuser"]." -gp ".$parsed_json[1]["rootpass"]." runScriptInGuest '".$parsed_json[1]["vmx"]."' '/bin/bash'";
   if (isset($_GET["sub"])) {
     switch ($_GET["sub"]) {
       case 'network-discovery':
